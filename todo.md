@@ -82,3 +82,15 @@
 - [x] Redesign header to match app style
 - [ ] Update all pages to use new color scheme
 - [x] Test responsive design on mobile devices
+
+
+## Enhancement Tasks - Modern UI & Profile
+- [x] Update icons to be more modern and trendy
+- [x] Apply green color (#0cc46a) consistently across entire website
+- [x] Add products carousel/grid directly on Home page
+- [x] Add doctors carousel/grid directly on Home page
+- [x] Make products and doctors browsable on Home page
+- [x] Create User Profile page with account information
+- [x] Add profile navigation to bottom nav bar
+- [x] Improve color consistency in all components
+- [x] Update button styles to match modern design

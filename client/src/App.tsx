@@ -10,6 +10,7 @@ import Cart from "./pages/Cart";
 import Doctors from "./pages/Doctors";
 import Appointments from "./pages/Appointments";
 import Reminders from "./pages/Reminders";
+import Profile from "./pages/Profile";
 
 function Router() {
   return (
@@ -19,8 +20,9 @@ function Router() {
       <Route path={"/cart"} component={Cart} />
       <Route path={"/doctors"} component={Doctors} />
       <Route path={"/appointments"} component={Appointments} />
-      <Route path={"/reminders"} component={Reminders} />
-      <Route path={"/404"} component={NotFound} />
+        <Route path={"reminders"} component={Reminders} />
+      <Route path={"profile"} component={Profile} />
+      <Route path={"404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
