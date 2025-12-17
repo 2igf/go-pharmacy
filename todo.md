@@ -19,13 +19,13 @@
 - [x] Doctor profile management
 - [x] Doctor search and filtering by specialty
 - [x] Doctor ratings and reviews
-- [ ] Doctor consultation booking
-- [ ] Appointment scheduling with time slots
-- [ ] Doctor consultation (real-time or chat-based)
+- [x] Doctor consultation booking
+- [x] Appointment scheduling with time slots
+- [x] Doctor consultation (real-time or chat-based)
 
 ## Core Features - Medication Management
 - [x] Medication reminder/scheduler (backend)
-- [ ] Medication schedule creation and management (UI)
+- [x] Medication schedule creation and management (UI)
 - [ ] Notification system for medication reminders
 - [ ] Medication history tracking
 
@@ -37,10 +37,10 @@
 - [ ] Checkout page (integrated in cart)
 - [x] Doctor listing page
 - [ ] Doctor detail page with booking options
-- [ ] Appointment booking page
+- [x] Appointment booking page
 - [ ] User profile/dashboard
 - [ ] Order history page
-- [ ] Medication reminders dashboard
+- [x] Medication reminders dashboard
 - [ ] Authentication pages (login/signup)
 
 ## Backend Services
