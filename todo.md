@@ -70,3 +70,15 @@
 - [ ] Prescription upload and verification
 - [ ] Insurance integration
 - [ ] Multi-language support (Arabic/English)
+
+
+## Redesign Tasks - Mobile App Style
+- [x] Update color scheme to use #0cc46a as primary color
+- [x] Redesign Home page to display products directly
+- [x] Create mobile app-like navigation (bottom tab bar)
+- [x] Update CSS and Tailwind theme colors
+- [x] Improve product grid display in Home page
+- [x] Add featured products section
+- [x] Redesign header to match app style
+- [ ] Update all pages to use new color scheme
+- [x] Test responsive design on mobile devices

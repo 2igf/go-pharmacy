@@ -1,62 +1,57 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Search, ShoppingCart, Star, ArrowLeft } from "lucide-react";
-import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Search, ArrowLeft, ShoppingCart, Home, Users, Calendar, Pill } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 const CATEGORIES = [
+  { value: "all", label: "جميع الفئات" },
   { value: "medications", label: "الأدوية" },
-  { value: "medical_supplies", label: "المستلزمات الطبية" },
-  { value: "natural_products", label: "المنتجات الطبيعية" },
-  { value: "skincare", label: "العناية بالبشرة" },
-  { value: "baby_care", label: "العناية بالأطفال" },
-  { value: "pet_care", label: "العناية بالحيوانات" },
+  { value: "natural", label: "منتجات طبيعية" },
+  { value: "hair_care", label: "العناية بالشعر" },
+  { value: "mother_baby", label: "الأم والطفل" },
+  { value: "medical_supplies", label: "مستلزمات طبية" },
 ];
 
-export default function Products() {
-  const [location] = useLocation();
-  const searchParams = new URLSearchParams(location.split("?")[1] || "");
-  const initialSearch = searchParams.get("search") || "";
-
-  const [searchQuery, setSearchQuery] = useState(initialSearch);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [offset, setOffset] = useState(0);
+export default function ProductsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
 
   // Fetch products
   const { data: products, isLoading } = trpc.products.list.useQuery({
-    limit: 12,
-    offset,
+    limit: 100,
+    offset: 0,
   });
 
-  // Search products
-  const { data: searchResults, isLoading: searchLoading } = trpc.products.search.useQuery(
-    { query: searchQuery, limit: 12 },
-    { enabled: searchQuery.length > 0 }
-  );
+  const filteredProducts = products?.filter((product) => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  }) || [];
 
-  // Filter by category
-  const { data: categoryProducts, isLoading: categoryLoading } = trpc.products.byCategory.useQuery(
-    { category: selectedCategory, limit: 12, offset },
-    { enabled: selectedCategory.length > 0 }
-  );
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setOffset(0);
-  };
-
-  const displayProducts = searchQuery.length > 0 ? searchResults : selectedCategory ? categoryProducts : products;
-  const isLoadingData = searchQuery.length > 0 ? searchLoading : selectedCategory ? categoryLoading : isLoading;
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortBy) {
+      case "price_low":
+        return (Number(a.price)) - (Number(b.price));
+      case "price_high":
+        return (Number(b.price)) - (Number(a.price));
+      case "name":
+        return (String(a.name)).localeCompare(String(b.name));
+      default:
+        return 0;
+    }
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="app-container">
       {/* Header */}
-      <div className="bg-white shadow-sm sticky top-0 z-40">
+      <div className="app-header">
         <div className="container mx-auto px-4 py-4">
           <Link href="/">
             <Button variant="ghost" size="sm" className="mb-4">
@@ -64,165 +59,141 @@ export default function Products() {
               العودة
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">الأدوية والمنتجات</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">الأدوية والمنتجات</h1>
+
+          {/* Search and Filters */}
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="ابحث عن أدوية..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 rounded-full bg-gray-100 border-0 text-right"
+              />
+              <Button size="icon" className="rounded-full bg-[#0cc46a] hover:bg-[#09a855]">
+                <Search className="w-5 h-5" />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="text-right">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="text-right">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">الأحدث</SelectItem>
+                  <SelectItem value="price_low">السعر: الأقل أولاً</SelectItem>
+                  <SelectItem value="price_high">السعر: الأعلى أولاً</SelectItem>
+                  <SelectItem value="name">الاسم: أ-ي</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow p-6 sticky top-20">
-              <h2 className="text-lg font-bold mb-6">التصفية</h2>
-
-              {/* Search */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  البحث
-                </label>
-                <form onSubmit={handleSearch} className="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder="ابحث..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="text-right"
-                  />
-                  <Button type="submit" size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                    <Search className="w-4 h-4" />
-                  </Button>
-                </form>
-              </div>
-
-              {/* Category Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الفئة
-                </label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر فئة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">جميع الفئات</SelectItem>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Clear Filters */}
-              {(searchQuery || selectedCategory) && (
-                <Button
-                  variant="outline"
-                  className="w-full mt-6"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory("");
-                    setOffset(0);
-                  }}
-                >
-                  مسح الفلاتر
-                </Button>
-              )}
+      {/* Products Grid */}
+      <div className="app-content">
+        <div className="container mx-auto px-4 py-6">
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-[#0cc46a]" />
             </div>
-          </div>
-
-          {/* Products Grid */}
-          <div className="lg:col-span-3">
-            {isLoadingData ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
-              </div>
-            ) : displayProducts && displayProducts.length > 0 ? (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                  {displayProducts.map((product) => (
-                    <Link key={product.id} href={`/product/${product.id}`}>
-                      <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
-                        <CardHeader>
-                          {product.image && (
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-full h-40 object-cover rounded-md mb-4"
-                            />
-                          )}
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <CardTitle className="text-lg">{product.name}</CardTitle>
-                              {product.manufacturer && (
-                                <CardDescription>{product.manufacturer}</CardDescription>
-                              )}
-                            </div>
-                            {product.requiresPrescription && (
-                              <Badge variant="destructive" className="ml-2">
-                                وصفة
-                              </Badge>
-                            )}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="flex-1 flex flex-col justify-between">
-                          {product.description && (
-                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                              {product.description}
-                            </p>
-                          )}
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-2xl font-bold text-emerald-600">
-                                {product.price} JD
-                              </p>
-                              {product.rating && (
-                                <div className="flex items-center gap-1 mt-2">
-                                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-sm text-gray-600">
-                                    {product.rating} ({product.reviewCount})
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                              <ShoppingCart className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                <div className="flex items-center justify-between">
-                  <Button
-                    variant="outline"
-                    onClick={() => setOffset(Math.max(0, offset - 12))}
-                    disabled={offset === 0}
-                  >
-                    السابق
-                  </Button>
-                  <span className="text-gray-600">
-                    الصفحة {Math.floor(offset / 12) + 1}
-                  </span>
-                  <Button
-                    variant="outline"
-                    onClick={() => setOffset(offset + 12)}
-                    disabled={!displayProducts || displayProducts.length < 12}
-                  >
-                    التالي
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">لم يتم العثور على منتجات</p>
-              </div>
-            )}
-          </div>
+          ) : sortedProducts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {sortedProducts.map((product) => (
+                <Card key={product.id} className="hover:shadow-lg transition-shadow h-full flex flex-col">
+                  <CardContent className="pt-4 flex-1 flex flex-col">
+                    {product.image && (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-32 object-cover rounded-md mb-3"
+                      />
+                    )}
+                    <h3 className="font-semibold text-sm line-clamp-2 mb-2">{product.name}</h3>
+                    {product.manufacturer && (
+                      <p className="text-xs text-gray-600 mb-2">{product.manufacturer}</p>
+                    )}
+                    {product.category && (
+                      <Badge variant="outline" className="mb-2 w-fit text-xs">
+                        {product.category}
+                      </Badge>
+                    )}
+                    <div className="flex items-center justify-between mt-auto mb-3">
+                      <span className="text-lg font-bold text-[#0cc46a]">{product.price} JD</span>
+                      {product.requiresPrescription && (
+                        <Badge variant="destructive" className="text-xs">
+                          وصفة
+                        </Badge>
+                      )}
+                    </div>
+                    <Button className="w-full bg-[#0cc46a] hover:bg-[#09a855] text-white">
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      أضف للسلة
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600 text-lg">لم يتم العثور على منتجات</p>
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="app-bottom-nav">
+        <Link href="/">
+          <div className="app-nav-item">
+            <Home className="w-6 h-6" />
+            <span className="text-xs">الرئيسية</span>
+          </div>
+        </Link>
+
+        <Link href="/doctors">
+          <div className="app-nav-item">
+            <Users className="w-6 h-6" />
+            <span className="text-xs">الأطباء</span>
+          </div>
+        </Link>
+
+        <Link href="/appointments">
+          <div className="app-nav-item">
+            <Calendar className="w-6 h-6" />
+            <span className="text-xs">المواعيد</span>
+          </div>
+        </Link>
+
+        <Link href="/reminders">
+          <div className="app-nav-item">
+            <Pill className="w-6 h-6" />
+            <span className="text-xs">التذكيرات</span>
+          </div>
+        </Link>
+
+        <Link href="/cart">
+          <div className="app-nav-item">
+            <ShoppingCart className="w-6 h-6" />
+            <span className="text-xs">السلة</span>
+          </div>
+        </Link>
       </div>
     </div>
   );
