@@ -94,3 +94,15 @@
 - [x] Add profile navigation to bottom nav bar
 - [x] Improve color consistency in all components
 - [x] Update button styles to match modern design
+
+
+## Current Tasks - Color Scheme & Sample Data
+- [x] Update color scheme from #0cc46a to #00c57d throughout entire website
+- [x] Update all button colors to use new green shade
+- [x] Update icon colors to match new scheme
+- [x] Modernize icon designs (use more trendy icons)
+- [x] Add sample/test medications to database
+- [x] Add sample/test doctors to database
+- [x] Redesign Home page to look like messaging apps (card-based layout)
+- [x] Improve product card designs for better visual appeal
+- [x] Add smooth animations and transitions
