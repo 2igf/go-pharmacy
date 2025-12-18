@@ -11,16 +11,16 @@ import { trpc } from "@/lib/trpc";
 const CATEGORIES = [
   { value: "all", label: "جميع الفئات" },
   { value: "medications", label: "الأدوية" },
-  { value: "natural", label: "منتجات طبيعية" },
-  { value: "hair_care", label: "العناية بالشعر" },
-  { value: "mother_baby", label: "الأم والطفل" },
+  { value: "natural_products", label: "منتجات طبيعية" },
+  { value: "skincare", label: "العناية بالبشرة" },
+  { value: "baby_care", label: "العناية بالأطفال" },
   { value: "medical_supplies", label: "مستلزمات طبية" },
 ];
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState("name");
 
   // Fetch products
   const { data: products, isLoading } = trpc.products.list.useQuery({
@@ -30,7 +30,8 @@ export default function ProductsPage() {
 
   const filteredProducts = products?.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (product.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase()));
+      (product.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (product.description?.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }) || [];
@@ -51,10 +52,10 @@ export default function ProductsPage() {
   return (
     <div className="app-container">
       {/* Header */}
-      <div className="app-header">
+      <div className="app-header sticky top-0 z-40 bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
           <Link href="/">
-            <Button variant="ghost" size="sm" className="mb-4">
+            <Button variant="ghost" size="sm" className="mb-4 text-[#00c57d] hover:bg-green-50">
               <ArrowLeft className="w-4 h-4 mr-2" />
               العودة
             </Button>
@@ -71,14 +72,14 @@ export default function ProductsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 rounded-full bg-gray-100 border-0 text-right"
               />
-              <Button size="icon" className="rounded-full bg-[#0cc46a] hover:bg-[#09a855]">
+              <Button size="icon" className="rounded-full bg-[#00c57d] hover:bg-[#00a86a]">
                 <Search className="w-5 h-5" />
               </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="text-right">
+                <SelectTrigger className="text-right bg-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -91,14 +92,13 @@ export default function ProductsPage() {
               </Select>
 
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="text-right">
+                <SelectTrigger className="text-right bg-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">الأحدث</SelectItem>
+                  <SelectItem value="name">الاسم: أ-ي</SelectItem>
                   <SelectItem value="price_low">السعر: الأقل أولاً</SelectItem>
                   <SelectItem value="price_high">السعر: الأعلى أولاً</SelectItem>
-                  <SelectItem value="name">الاسم: أ-ي</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -107,43 +107,40 @@ export default function ProductsPage() {
       </div>
 
       {/* Products Grid */}
-      <div className="app-content">
+      <div className="app-content pb-24">
         <div className="container mx-auto px-4 py-6">
           {isLoading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-[#0cc46a]" />
+              <Loader2 className="w-8 h-8 animate-spin text-[#00c57d]" />
             </div>
           ) : sortedProducts.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {sortedProducts.map((product) => (
-                <Card key={product.id} className="hover:shadow-lg transition-shadow h-full flex flex-col">
-                  <CardContent className="pt-4 flex-1 flex flex-col">
-                    {product.image && (
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-32 object-cover rounded-md mb-3"
-                      />
-                    )}
-                    <h3 className="font-semibold text-sm line-clamp-2 mb-2">{product.name}</h3>
+                <Card key={product.id} className="hover:shadow-lg transition-shadow h-full flex flex-col border border-gray-200 rounded-lg overflow-hidden">
+                  {/* Product Image */}
+                  <div className="bg-gradient-to-br from-[#00c57d] to-[#00a86a] h-32 flex items-center justify-center">
+                    <Pill className="text-white" size={40} />
+                  </div>
+
+                  <CardContent className="pt-3 flex-1 flex flex-col">
+                    <h3 className="font-semibold text-sm line-clamp-2 mb-1 text-gray-900">{product.name}</h3>
                     {product.manufacturer && (
                       <p className="text-xs text-gray-600 mb-2">{product.manufacturer}</p>
                     )}
-                    {product.category && (
-                      <Badge variant="outline" className="mb-2 w-fit text-xs">
-                        {product.category}
-                      </Badge>
+                    {product.description && (
+                      <p className="text-xs text-gray-500 line-clamp-1 mb-2">{product.description}</p>
                     )}
+                    
                     <div className="flex items-center justify-between mt-auto mb-3">
-                      <span className="text-lg font-bold text-[#0cc46a]">{product.price} JD</span>
+                      <span className="text-lg font-bold text-[#00c57d]">${product.price}</span>
                       {product.requiresPrescription && (
-                        <Badge variant="destructive" className="text-xs">
+                        <Badge className="bg-orange-100 text-orange-700 text-xs border-0">
                           وصفة
                         </Badge>
                       )}
                     </div>
-                    <Button className="w-full bg-[#0cc46a] hover:bg-[#09a855] text-white">
-                      <ShoppingCart className="w-4 h-4 mr-2" />
+                    <Button className="w-full bg-[#00c57d] hover:bg-[#00a86a] text-white h-8 text-sm">
+                      <ShoppingCart className="w-3 h-3 mr-1" />
                       أضف للسلة
                     </Button>
                   </CardContent>
@@ -152,7 +149,9 @@ export default function ProductsPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">لم يتم العثور على منتجات</p>
+              <Pill className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600 text-lg font-semibold">لم يتم العثور على منتجات</p>
+              <p className="text-gray-500 text-sm mt-2">جرب البحث عن منتجات أخرى أو غير الفئة</p>
             </div>
           )}
         </div>
