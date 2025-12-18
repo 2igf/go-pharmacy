@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Search, ShoppingCart, Clock, Users, Pill, ChevronRight, Star, MapPin } from "lucide-react";
+import { Loader2, Search, ShoppingCart, Clock, Users, Pill, ChevronRight, Star, MapPin, Home as HomeIcon } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
@@ -224,6 +224,44 @@ export default function Home() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="app-bottom-nav">
+        <a href="/">
+          <div className="app-nav-item active">
+            <HomeIcon className="w-6 h-6" />
+            <span className="text-xs">الرئيسية</span>
+          </div>
+        </a>
+
+        <a href="/products">
+          <div className="app-nav-item">
+            <ShoppingCart className="w-6 h-6" />
+            <span className="text-xs">الأدوية</span>
+          </div>
+        </a>
+
+        <a href="/doctors">
+          <div className="app-nav-item">
+            <Users className="w-6 h-6" />
+            <span className="text-xs">الأطباء</span>
+          </div>
+        </a>
+
+        <a href="/appointments">
+          <div className="app-nav-item">
+            <Clock className="w-6 h-6" />
+            <span className="text-xs">المواعيد</span>
+          </div>
+        </a>
+
+        <a href="/reminders">
+          <div className="app-nav-item">
+            <Pill className="w-6 h-6" />
+            <span className="text-xs">التذكيرات</span>
+          </div>
+        </a>
       </div>
     </div>
   );

@@ -130,3 +130,7 @@
 - [x] Add product categories and subcategories
 - [x] Add doctor specialties with descriptions
 - [x] Add sample reviews and ratings
+
+
+## Current Issues
+- [x] Fix bottom navigation not showing on Home page
