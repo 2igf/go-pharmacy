@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Search, ShoppingCart, Clock, Users, Pill, ChevronRight, Star, MapPin, Home as HomeIcon } from "lucide-react";
+import { Loader2, Search, ShoppingCart, Clock, Users, Pill, ChevronRight, Star, MapPin, Home as HomeIcon, User } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
@@ -260,6 +260,13 @@ export default function Home() {
           <div className="app-nav-item">
             <Pill className="w-6 h-6" />
             <span className="text-xs">التذكيرات</span>
+          </div>
+        </a>
+
+        <a href="/profile">
+          <div className="app-nav-item">
+            <User className="w-6 h-6" />
+            <span className="text-xs">الملف الشخصي</span>
           </div>
         </a>
       </div>

@@ -20,8 +20,8 @@ function Router() {
       <Route path={"/cart"} component={Cart} />
       <Route path={"/doctors"} component={Doctors} />
       <Route path={"/appointments"} component={Appointments} />
-        <Route path={"reminders"} component={Reminders} />
-      <Route path={"profile"} component={Profile} />
+        <Route path={"/reminders"} component={Reminders} />
+      <Route path={"/profile"} component={Profile} />
       <Route path={"404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

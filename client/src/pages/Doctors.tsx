@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Search, ArrowLeft, ShoppingCart, Home, Users, Calendar, Pill, Star, Clock } from "lucide-react";
+import { Loader2, Search, ArrowLeft, ShoppingCart, Home, Users, Calendar, Pill, Star, Clock, User } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 const SPECIALTIES = [
@@ -211,6 +211,13 @@ export default function Doctors() {
           <div className="app-nav-item">
             <ShoppingCart className="w-6 h-6" />
             <span className="text-xs">السلة</span>
+          </div>
+        </Link>
+
+        <Link href="/profile">
+          <div className="app-nav-item">
+            <User className="w-6 h-6" />
+            <span className="text-xs">الملف الشخصي</span>
           </div>
         </Link>
       </div>

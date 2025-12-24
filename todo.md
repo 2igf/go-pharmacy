@@ -134,3 +134,9 @@
 
 ## Current Issues
 - [x] Fix bottom navigation not showing on Home page
+
+
+## Profile Page Integration
+- [ ] Add Profile to bottom navigation bar
+- [ ] Update all pages to include Profile in bottom nav
+- [ ] Ensure Profile link works from all pages
