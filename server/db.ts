@@ -12,7 +12,9 @@ import {
   userAddresses,
   prescriptions,
   doctorTimeSlots,
-  medicationReminderLogs
+  medicationReminderLogs,
+  notifications as notificationsTable,
+  InsertNotification
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -302,4 +304,51 @@ export async function getPrescriptionById(id: number) {
 
   const result = await db.select().from(prescriptions).where(eq(prescriptions.id, id)).limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+
+// ============= NOTIFICATION QUERIES =============
+
+export async function getUserNotifications(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(notificationsTable)
+    .where(eq(notificationsTable.userId, userId))
+    .orderBy(desc(notificationsTable.createdAt));
+}
+
+export async function getUnreadNotificationCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db.select().from(notificationsTable)
+    .where(and(eq(notificationsTable.userId, userId), eq(notificationsTable.isRead, false)));
+  return result.length;
+}
+
+export async function createNotification(notification: InsertNotification) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.insert(notificationsTable).values(notification);
+  return result;
+}
+
+export async function markNotificationAsRead(id: number) {
+  const db = await getDb();
+  if (!db) return false;
+
+  await db.update(notificationsTable)
+    .set({ isRead: true })
+    .where(eq(notificationsTable.id, id));
+  return true;
+}
+
+export async function deleteNotification(id: number) {
+  const db = await getDb();
+  if (!db) return false;
+
+  await db.delete(notificationsTable).where(eq(notificationsTable.id, id));
+  return true;
 }

@@ -314,3 +314,26 @@ export const doctorReviews = mysqlTable("doctorReviews", {
 
 export type DoctorReview = typeof doctorReviews.$inferSelect;
 export type InsertDoctorReview = typeof doctorReviews.$inferInsert;
+
+/**
+ * Notifications for users
+ */
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  type: mysqlEnum("type", [
+    "order_status",
+    "appointment_reminder",
+    "medication_reminder",
+    "system",
+    "promotion"
+  ]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  relatedId: int("relatedId"),
+  isRead: boolean("isRead").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;

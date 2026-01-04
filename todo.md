@@ -140,3 +140,36 @@
 - [ ] Add Profile to bottom navigation bar
 - [ ] Update all pages to include Profile in bottom nav
 - [ ] Ensure Profile link works from all pages
+
+
+## Stripe Payment Integration
+- [ ] Install Stripe dependencies (stripe, @stripe/react-stripe-js)
+- [ ] Create Stripe payment page/component
+- [ ] Implement checkout flow with Stripe
+- [ ] Add payment confirmation page
+- [ ] Handle payment success/failure
+- [ ] Store payment information in database
+- [ ] Add order confirmation after payment
+
+## Notifications System
+- [ ] Create notifications database table
+- [ ] Add notification service in backend
+- [ ] Create notification UI component
+- [ ] Implement real-time notifications
+- [ ] Add notification preferences page
+- [ ] Send notifications for order updates
+- [ ] Send notifications for appointment reminders
+- [ ] Send notifications for medication reminders
+
+
+## Notifications System Implementation
+- [x] Add notifications table to database schema
+- [x] Create notification service in backend
+- [ ] Add notification UI component
+- [ ] Implement notification toast system
+- [ ] Add notification preferences page
+- [ ] Send notifications for order status updates
+- [ ] Send notifications for appointment reminders
+- [ ] Send notifications for medication reminders
+- [ ] Add notification bell icon in header
+- [ ] Create notifications history page

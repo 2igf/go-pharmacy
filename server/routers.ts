@@ -516,6 +516,33 @@ export const appRouter = router({
       }),
   }),
 
+  // ============= NOTIFICATIONS ROUTER =============
+  notifications: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const { getUserNotifications } = await import("./db");
+      return await getUserNotifications(ctx.user.id);
+    }),
+
+    unreadCount: protectedProcedure.query(async ({ ctx }) => {
+      const { getUnreadNotificationCount } = await import("./db");
+      return await getUnreadNotificationCount(ctx.user.id);
+    }),
+
+    markAsRead: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { markNotificationAsRead } = await import("./db");
+        return await markNotificationAsRead(input.id);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { deleteNotification } = await import("./db");
+        return await deleteNotification(input.id);
+      }),
+  }),
+
   // ============= PRESCRIPTIONS ROUTER =============
   prescriptions: router({
     list: protectedProcedure.query(async ({ ctx }) => {
