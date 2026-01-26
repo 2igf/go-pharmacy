@@ -1,14 +1,14 @@
-import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, ArrowLeft, Home, Users, Calendar, Pill, ShoppingCart, User, Mail, Phone, MapPin, LogOut, Edit2, Save } from "lucide-react";
+import { Loader2, ArrowLeft, Home, Users, Calendar, Pill, ShoppingCart, User, Mail, Phone, MapPin, LogOut, Edit2, Save, LayoutDashboard } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export default function ProfilePage() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -155,6 +155,29 @@ export default function ProfilePage() {
               </div>
             </CardHeader>
           </Card>
+
+          {/* Admin Dashboard Link */}
+          {user?.role === "admin" && (
+            <Card className="mb-6 bg-gradient-to-r from-[#00c57d] to-[#00a86a] text-white border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <LayoutDashboard className="w-5 h-5" />
+                  لوحة التحكم الإدارية
+                </CardTitle>
+                <CardDescription className="text-green-100">
+                  إدارة كاملة للموقع والمنتجات والأطباء والمواعيد
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/admin-panel">
+                  <Button className="w-full bg-white text-[#00c57d] hover:bg-gray-100 font-semibold">
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    الذهاب إلى لوحة التحكم
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Edit Profile Form */}
           {isEditing && (
