@@ -1,16 +1,23 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Search, ShoppingCart, Clock, Users, Pill, ChevronRight, Star, MapPin, Home as HomeIcon, User } from "lucide-react";
+import { Loader2, Search, ShoppingCart, Clock, Users, Pill, ChevronRight, Star, MapPin, Home as HomeIcon, User, LogIn } from "lucide-react";
 import { useState } from "react";
+import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/products?search=${encodeURIComponent(query)}`);
+    }
+  };
 
   // Fetch products and doctors
   const { data: products, isLoading: productsLoading } = trpc.products.list.useQuery({
@@ -46,12 +53,31 @@ export default function Home() {
         <div className="container py-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900">GO Pharmacy</h1>
-            <button className="relative">
-              <ShoppingCart className="text-[#00c57d]" size={24} />
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                0
-              </span>
-            </button>
+            <div className="flex items-center gap-3">
+              {!user ? (
+                <a
+                  href={getLoginUrl()}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#00c57d] hover:bg-[#00a86a] text-white rounded-lg font-semibold transition-colors"
+                >
+                  <LogIn size={18} />
+                  <span>تسجيل الدخول</span>
+                </a>
+              ) : (
+                <button
+                  onClick={() => navigate("/profile")}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg font-semibold transition-colors"
+                >
+                  <User size={18} />
+                  <span>{user.name}</span>
+                </button>
+              )}
+              <button className="relative">
+                <ShoppingCart className="text-[#00c57d]" size={24} />
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  0
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Search Bar */}
