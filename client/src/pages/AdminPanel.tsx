@@ -21,11 +21,13 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -33,7 +35,8 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "products" | "doctors" | "appointments">("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -43,16 +46,17 @@ export default function AdminPanel() {
     description: "",
     stock: "",
     requiresPrescription: false,
-    imageUrl: "",
+    image: "",
+    manufacturer: "",
   });
 
   // Fetch data
-  const { data: products, isLoading: productsLoading } = trpc.products.list.useQuery({
+  const { data: products, isLoading: productsLoading, refetch: refetchProducts } = trpc.products.list.useQuery({
     limit: 100,
     offset: 0,
   });
 
-  const { data: doctors, isLoading: doctorsLoading } = trpc.doctors.list.useQuery({
+  const { data: doctors, isLoading: doctorsLoading, refetch: refetchDoctors } = trpc.doctors.list.useQuery({
     limit: 100,
     offset: 0,
   });
@@ -66,6 +70,42 @@ export default function AdminPanel() {
     undefined,
     { enabled: true }
   );
+
+  // Mutations
+  const createProductMutation = trpc.products.create.useMutation({
+    onSuccess: () => {
+      toast.success("تم إضافة الدواء بنجاح");
+      refetchProducts();
+      resetForm();
+      setShowAddForm(false);
+    },
+    onError: (error) => {
+      toast.error("فشل إضافة الدواء: " + error.message);
+    },
+  });
+
+  const updateProductMutation = trpc.products.update.useMutation({
+    onSuccess: () => {
+      toast.success("تم تحديث الدواء بنجاح");
+      refetchProducts();
+      setShowEditModal(false);
+      setEditingProduct(null);
+      resetForm();
+    },
+    onError: (error) => {
+      toast.error("فشل تحديث الدواء: " + error.message);
+    },
+  });
+
+  const deleteProductMutation = trpc.products.delete.useMutation({
+    onSuccess: () => {
+      toast.success("تم حذف الدواء بنجاح");
+      refetchProducts();
+    },
+    onError: (error) => {
+      toast.error("فشل حذف الدواء: " + error.message);
+    },
+  });
 
   // Check authorization
   if (!user || user.role !== "admin") {
@@ -86,36 +126,74 @@ export default function AdminPanel() {
     );
   }
 
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      price: "",
+      category: "medications",
+      description: "",
+      stock: "",
+      requiresPrescription: false,
+      image: "",
+      manufacturer: "",
+    });
+  };
+
   const handleAddProduct = async () => {
     if (!formData.name || !formData.price) {
-      toast.error("يرجى ملء جميع الحقول المطلوبة");
+      toast.error("يرجى ملء الاسم والسعر");
       return;
     }
 
-    try {
-      toast.success("تم إضافة المنتج بنجاح");
-      setFormData({
-        name: "",
-        price: "",
-        category: "medications",
-        description: "",
-        stock: "",
-        requiresPrescription: false,
-        imageUrl: "",
-      });
-      setShowAddForm(false);
-    } catch (error) {
-      toast.error("فشل إضافة المنتج");
+    createProductMutation.mutate({
+      name: formData.name,
+      price: formData.price,
+      category: formData.category as any,
+      description: formData.description,
+      stock: formData.stock,
+      requiresPrescription: formData.requiresPrescription,
+      image: formData.image,
+      manufacturer: formData.manufacturer,
+    });
+  };
+
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      price: product.price,
+      category: product.category,
+      description: product.description || "",
+      stock: product.stock?.toString() || "",
+      requiresPrescription: product.requiresPrescription || false,
+      image: product.image || "",
+      manufacturer: product.manufacturer || "",
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateProduct = async () => {
+    if (!formData.name || !formData.price) {
+      toast.error("يرجى ملء الاسم والسعر");
+      return;
     }
+
+    updateProductMutation.mutate({
+      id: editingProduct.id,
+      name: formData.name,
+      price: formData.price,
+      category: formData.category as any,
+      description: formData.description,
+      stock: formData.stock,
+      requiresPrescription: formData.requiresPrescription,
+      image: formData.image,
+      manufacturer: formData.manufacturer,
+    });
   };
 
   const handleDeleteProduct = async (id: number) => {
-    if (confirm("هل تريد حذف هذا المنتج؟")) {
-      try {
-        toast.success("تم حذف المنتج بنجاح");
-      } catch (error) {
-        toast.error("فشل حذف المنتج");
-      }
+    if (confirm("هل تريد حذف هذا الدواء؟")) {
+      deleteProductMutation.mutate({ id });
     }
   };
 
@@ -124,8 +202,10 @@ export default function AdminPanel() {
     if (!file) return;
 
     try {
-      toast.success("تم رفع الصورة بنجاح");
-      setFormData({ ...formData, imageUrl: "uploaded-image-url" });
+      // For now, just store the file name
+      // In production, you'd upload to S3
+      setFormData({ ...formData, image: file.name });
+      toast.success("تم اختيار الصورة بنجاح");
     } catch (error) {
       toast.error("فشل رفع الصورة");
     }
@@ -138,6 +218,10 @@ export default function AdminPanel() {
   const totalOrders = orders?.length || 0;
   const pendingOrders = orders?.filter(o => o.status === "pending").length || 0;
   const completedOrders = orders?.filter(o => o.status === "delivered").length || 0;
+
+  const filteredProducts = products?.filter(p =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
   return (
     <div className="app-container">
@@ -280,7 +364,10 @@ export default function AdminPanel() {
                   className="flex-1 rounded-lg bg-gray-100 border-0"
                 />
                 <Button
-                  onClick={() => setShowAddForm(!showAddForm)}
+                  onClick={() => {
+                    resetForm();
+                    setShowAddForm(!showAddForm);
+                  }}
                   className="bg-[#00c57d] hover:bg-[#00a86a] text-white"
                 >
                   <Plus className="mr-2" size={18} />
@@ -296,7 +383,7 @@ export default function AdminPanel() {
                   <CardContent className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        اسم الدواء
+                        اسم الدواء *
                       </label>
                       <Input
                         type="text"
@@ -310,7 +397,7 @@ export default function AdminPanel() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          السعر
+                          السعر *
                         </label>
                         <Input
                           type="number"
@@ -348,6 +435,7 @@ export default function AdminPanel() {
                         <option value="skincare">العناية بالبشرة</option>
                         <option value="baby_care">العناية بالأطفال</option>
                         <option value="medical_supplies">مستلزمات طبية</option>
+                        <option value="pet_care">العناية بالحيوانات</option>
                       </select>
                     </div>
 
@@ -361,6 +449,19 @@ export default function AdminPanel() {
                         placeholder="الوصف"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                         rows={3}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        الشركة المصنعة
+                      </label>
+                      <Input
+                        type="text"
+                        value={formData.manufacturer}
+                        onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
+                        placeholder="اسم الشركة"
+                        className="w-full"
                       />
                     </div>
 
@@ -389,17 +490,31 @@ export default function AdminPanel() {
                         onChange={handleImageUpload}
                         className="w-full"
                       />
+                      {formData.image && (
+                        <p className="text-sm text-green-600 mt-2">✓ تم اختيار: {formData.image}</p>
+                      )}
                     </div>
 
                     <div className="flex gap-2">
                       <Button
                         onClick={handleAddProduct}
+                        disabled={createProductMutation.isPending}
                         className="flex-1 bg-[#00c57d] hover:bg-[#00a86a] text-white"
                       >
-                        حفظ
+                        {createProductMutation.isPending ? (
+                          <>
+                            <Loader2 className="animate-spin mr-2" size={16} />
+                            جاري الحفظ...
+                          </>
+                        ) : (
+                          "حفظ"
+                        )}
                       </Button>
                       <Button
-                        onClick={() => setShowAddForm(false)}
+                        onClick={() => {
+                          setShowAddForm(false);
+                          resetForm();
+                        }}
                         className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900"
                       >
                         إلغاء
@@ -414,7 +529,7 @@ export default function AdminPanel() {
                   <div className="flex justify-center py-12">
                     <Loader2 className="animate-spin text-[#00c57d]" size={32} />
                   </div>
-                ) : (
+                ) : filteredProducts.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead className="bg-gray-50 border-b border-gray-200">
@@ -437,7 +552,7 @@ export default function AdminPanel() {
                         </tr>
                       </thead>
                       <tbody>
-                        {products?.map((product) => (
+                        {filteredProducts.map((product) => (
                           <tr key={product.id} className="border-b border-gray-200 hover:bg-gray-50">
                             <td className="px-4 py-3 text-sm text-gray-900">{product.name}</td>
                             <td className="px-4 py-3 text-sm text-gray-900">${product.price}</td>
@@ -445,12 +560,16 @@ export default function AdminPanel() {
                             <td className="px-4 py-3 text-sm text-gray-900">{product.category}</td>
                             <td className="px-4 py-3 text-sm">
                               <div className="flex gap-2">
-                                <button className="p-2 hover:bg-blue-100 rounded-lg transition-colors">
+                                <button
+                                  onClick={() => handleEditProduct(product)}
+                                  className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                                >
                                   <Edit2 size={16} className="text-blue-600" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteProduct(product.id)}
-                                  className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                                  disabled={deleteProductMutation.isPending}
+                                  className="p-2 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"
                                 >
                                   <Trash2 size={16} className="text-red-600" />
                                 </button>
@@ -460,6 +579,11 @@ export default function AdminPanel() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600 text-lg font-semibold">لا توجد أدوية</p>
                   </div>
                 )}
               </div>
@@ -473,7 +597,7 @@ export default function AdminPanel() {
                 <div className="flex justify-center py-12">
                   <Loader2 className="animate-spin text-[#00c57d]" size={32} />
                 </div>
-              ) : (
+              ) : doctors && doctors.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
@@ -493,7 +617,7 @@ export default function AdminPanel() {
                       </tr>
                     </thead>
                     <tbody>
-                      {doctors?.map((doctor) => (
+                      {doctors.map((doctor) => (
                         <tr key={doctor.id} className="border-b border-gray-200 hover:bg-gray-50">
                           <td className="px-4 py-3 text-sm text-gray-900">Dr. {doctor.id}</td>
                           <td className="px-4 py-3 text-sm text-gray-900">{doctor.specialty}</td>
@@ -514,6 +638,11 @@ export default function AdminPanel() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-600 text-lg font-semibold">لا يوجد أطباء</p>
                 </div>
               )}
             </div>
@@ -604,6 +733,101 @@ export default function AdminPanel() {
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>تعديل الدواء</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                اسم الدواء *
+              </label>
+              <Input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="اسم الدواء"
+                className="w-full"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  السعر *
+                </label>
+                <Input
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  placeholder="السعر"
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  الكمية
+                </label>
+                <Input
+                  type="number"
+                  value={formData.stock}
+                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                  placeholder="الكمية"
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                الفئة
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="medications">أدوية</option>
+                <option value="natural_products">منتجات طبيعية</option>
+                <option value="skincare">العناية بالبشرة</option>
+                <option value="baby_care">العناية بالأطفال</option>
+                <option value="medical_supplies">مستلزمات طبية</option>
+                <option value="pet_care">العناية بالحيوانات</option>
+              </select>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleUpdateProduct}
+                disabled={updateProductMutation.isPending}
+                className="flex-1 bg-[#00c57d] hover:bg-[#00a86a] text-white"
+              >
+                {updateProductMutation.isPending ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2" size={16} />
+                    جاري التحديث...
+                  </>
+                ) : (
+                  "حفظ التعديلات"
+                )}
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingProduct(null);
+                  resetForm();
+                }}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900"
+              >
+                إلغاء
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Bottom Navigation */}
       <div className="app-bottom-nav">

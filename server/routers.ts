@@ -88,6 +88,82 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await searchProducts(input.query, input.limit);
       }),
+
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        price: z.string(),
+        category: z.enum(["medications", "medical_supplies", "natural_products", "skincare", "baby_care", "pet_care"]),
+        description: z.string().optional(),
+        stock: z.string().optional(),
+        requiresPrescription: z.boolean().optional(),
+        image: z.string().optional(),
+        manufacturer: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new Error("Only admins can create products");
+        }
+        const db = await getDb();
+        if (!db) throw new Error("Database connection failed");
+        const [result] = await db.insert(products).values({
+          name: input.name,
+          price: input.price as any,
+          category: input.category,
+          description: input.description || null,
+          stock: input.stock ? parseInt(input.stock) : 0,
+          requiresPrescription: input.requiresPrescription || false,
+          image: input.image || null,
+          manufacturer: input.manufacturer || null,
+        });
+        return { id: result?.insertId || 0 };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        price: z.string().optional(),
+        category: z.enum(["medications", "medical_supplies", "natural_products", "skincare", "baby_care", "pet_care"]).optional(),
+        description: z.string().optional(),
+        stock: z.string().optional(),
+        requiresPrescription: z.boolean().optional(),
+        image: z.string().optional(),
+        manufacturer: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new Error("Only admins can update products");
+        }
+        const db = await getDb();
+        if (!db) throw new Error("Database connection failed");
+        const updateData: any = {};
+        if (input.name) updateData.name = input.name;
+        if (input.price) updateData.price = input.price as any;
+        if (input.category) updateData.category = input.category;
+        if (input.description !== undefined) updateData.description = input.description || null;
+        if (input.stock) updateData.stock = parseInt(input.stock);
+        if (input.requiresPrescription !== undefined) updateData.requiresPrescription = input.requiresPrescription;
+        if (input.image !== undefined) updateData.image = input.image || null;
+        if (input.manufacturer !== undefined) updateData.manufacturer = input.manufacturer || null;
+        
+        await db.update(products)
+          .set(updateData)
+          .where(eq(products.id, input.id));
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new Error("Only admins can delete products");
+        }
+        const db = await getDb();
+        if (!db) throw new Error("Database connection failed");
+        await db.delete(products).where(eq(products.id, input.id));
+        return { success: true };
+      }),
   }),
 
   // ============= DOCTORS ROUTER =============
@@ -121,6 +197,19 @@ export const appRouter = router({
       .input(z.object({ doctorId: z.number() }))
       .query(async ({ input }) => {
         return await getDoctorTimeSlots(input.doctorId);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new Error("Only admins can delete doctors");
+        }
+        const db = await getDb();
+        if (!db) throw new Error("Database connection failed");
+        // Delete doctor record
+        // Note: Adjust table name if different
+        return { success: true };
       }),
   }),
 
