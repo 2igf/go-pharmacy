@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Search, ShoppingCart, Clock, Users, Pill, ChevronRight, Star, MapPin, Home as HomeIcon, User, LogIn } from "lucide-react";
+import { Loader2, Search, ShoppingCart, Clock, Users, Pill, ChevronRight, Star, MapPin, Home as HomeIcon, User, LogIn, Heart } from "lucide-react";
 import { useState } from "react";
+import ProductModal from "@/components/ProductModal";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -12,6 +13,13 @@ export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleProductClick = (product: any) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -29,10 +37,6 @@ export default function Home() {
     limit: 10,
     offset: 0,
   });
-
-  const handleProductClick = (productId: number) => {
-    navigate(`/products?id=${productId}`);
-  };
 
   const handleDoctorClick = (doctorId: number) => {
     navigate(`/doctors?id=${doctorId}`);
@@ -178,19 +182,38 @@ export default function Home() {
                 {products.map((product) => (
                   <div
                     key={product.id}
-                    onClick={() => handleProductClick(product.id)}
-                    className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                    className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <div className="bg-gray-100 rounded-lg h-32 mb-2 flex items-center justify-center">
+                    <div
+                      onClick={() => handleProductClick(product)}
+                      className="bg-gradient-to-br from-gray-100 to-gray-200 h-32 mb-2 flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
+                    >
                       <Pill className="text-[#00c57d]" size={40} />
                     </div>
-                    <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{product.name}</h3>
-                    <p className="text-[#00c57d] font-bold text-sm mt-1">${product.price}</p>
-                    {product.requiresPrescription && (
-                      <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded mt-1 inline-block">
-                        يلزم وصفة
-                      </span>
-                    )}
+                    <div className="p-3">
+                      <h3
+                        onClick={() => handleProductClick(product)}
+                        className="font-semibold text-gray-900 text-sm line-clamp-2 cursor-pointer hover:text-[#00c57d] transition-colors"
+                      >
+                        {product.name}
+                      </h3>
+                      <p className="text-[#00c57d] font-bold text-sm mt-1">${product.price}</p>
+                      {product.requiresPrescription && (
+                        <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded mt-1 inline-block">
+                          يلزم وصفة
+                        </span>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleProductClick(product);
+                        }}
+                        className="w-full mt-2 bg-[#00c57d] hover:bg-[#00a86a] text-white text-xs font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-1"
+                      >
+                        <ShoppingCart size={14} />
+                        شراء
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -296,6 +319,15 @@ export default function Home() {
           </div>
         </a>
       </div>
+
+      {/* Product Modal */}
+      {selectedProduct && (
+        <ProductModal
+          product={selectedProduct}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

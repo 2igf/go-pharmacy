@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Search, ArrowLeft, ShoppingCart, Home, Users, Calendar, Pill, User } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useState } from "react";
+import ProductModal from "@/components/ProductModal";
 
 const CATEGORIES = [
   { value: "all", label: "جميع الفئات" },
@@ -21,6 +22,8 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("name");
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch products
   const { data: products, isLoading } = trpc.products.list.useQuery({
@@ -116,14 +119,23 @@ export default function ProductsPage() {
           ) : sortedProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {sortedProducts.map((product) => (
-                <Card key={product.id} className="hover:shadow-lg transition-shadow h-full flex flex-col border border-gray-200 rounded-lg overflow-hidden">
+                <Card
+                  key={product.id}
+                  onClick={() => {
+                    setSelectedProduct(product);
+                    setIsModalOpen(true);
+                  }}
+                  className="hover:shadow-lg transition-shadow h-full flex flex-col border border-gray-200 rounded-lg overflow-hidden cursor-pointer"
+                >
                   {/* Product Image */}
-                  <div className="bg-gradient-to-br from-[#00c57d] to-[#00a86a] h-32 flex items-center justify-center">
+                  <div className="bg-gradient-to-br from-[#00c57d] to-[#00a86a] h-32 flex items-center justify-center hover:opacity-90 transition-opacity">
                     <Pill className="text-white" size={40} />
                   </div>
 
                   <CardContent className="pt-3 flex-1 flex flex-col">
-                    <h3 className="font-semibold text-sm line-clamp-2 mb-1 text-gray-900">{product.name}</h3>
+                    <h3 className="font-semibold text-sm line-clamp-2 mb-1 text-gray-900 hover:text-[#00c57d] transition-colors">
+                      {product.name}
+                    </h3>
                     {product.manufacturer && (
                       <p className="text-xs text-gray-600 mb-2">{product.manufacturer}</p>
                     )}
@@ -139,7 +151,14 @@ export default function ProductsPage() {
                         </Badge>
                       )}
                     </div>
-                    <Button className="w-full bg-[#00c57d] hover:bg-[#00a86a] text-white h-8 text-sm">
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProduct(product);
+                        setIsModalOpen(true);
+                      }}
+                      className="w-full bg-[#00c57d] hover:bg-[#00a86a] text-white h-8 text-sm"
+                    >
                       <ShoppingCart className="w-3 h-3 mr-1" />
                       أضف للسلة
                     </Button>
@@ -156,6 +175,15 @@ export default function ProductsPage() {
           )}
         </div>
       </div>
+
+      {/* Product Modal */}
+      {selectedProduct && (
+        <ProductModal
+          product={selectedProduct}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
 
       {/* Bottom Navigation */}
       <div className="app-bottom-nav">

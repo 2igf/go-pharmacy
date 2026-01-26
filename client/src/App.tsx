@@ -21,6 +21,7 @@ import OrderTracking from "./pages/OrderTracking";
 import AdminDashboard from "./pages/AdminDashboard";
 import PharmacyDashboard from "./pages/PharmacyDashboard";
 import DeliveryDashboard from "./pages/DeliveryDashboard";
+import AdminPanel from "./pages/AdminPanel";
 
 function Router() {
   const { user } = useAuth();
@@ -41,6 +42,7 @@ function Router() {
       <Route path={"/admin"} component={AdminDashboard} />
       <Route path={"/pharmacy"} component={PharmacyDashboard} />
       <Route path={"/delivery"} component={DeliveryDashboard} />
+      <Route path={"/admin-panel"} component={AdminPanel} />
       <Route path={"/doctors"} component={Doctors} />
       <Route path={"/appointments"} component={Appointments} />
         <Route path={"/reminders"} component={Reminders} />

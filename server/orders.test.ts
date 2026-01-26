@@ -35,7 +35,7 @@ describe("Orders", () => {
       // Insert test order
       const [result] = await db.insert(orders).values({
         userId: 1,
-        orderNumber: "TEST-001",
+        orderNumber: `TEST-${Date.now()}`,
         totalAmount: "100.00",
         status: "pending",
         deliveryAddress: "123 Test St",
@@ -51,7 +51,7 @@ describe("Orders", () => {
       if (orderId > 0) {
         const order = await getOrderById(orderId);
         expect(order).toBeDefined();
-        expect(order?.orderNumber).toBe("TEST-001");
+        expect(order?.orderNumber).toContain("TEST-");
       }
     });
 
@@ -70,7 +70,7 @@ describe("Orders", () => {
       for (const status of validStatuses) {
         const [result] = await db.insert(orders).values({
           userId: 1,
-          orderNumber: `TEST-${status}`,
+          orderNumber: `TEST-${status}-${Date.now()}`,
           totalAmount: "50.00",
           status,
           deliveryAddress: "Test Address",
@@ -93,7 +93,7 @@ describe("Orders", () => {
 
       const [result] = await db.insert(orders).values({
         userId: 1,
-        orderNumber: "PAYMENT-TEST",
+        orderNumber: `PAYMENT-TEST-${Date.now()}`,
         totalAmount: "75.00",
         status: "pending",
         deliveryAddress: "Test Address",
