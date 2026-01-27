@@ -22,6 +22,8 @@ import {
   CheckCircle,
   XCircle,
   X,
+  Image as ImageIcon,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +39,10 @@ export default function AdminPanel() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedStatistic, setSelectedStatistic] = useState<string | null>(null);
+  const [showStatisticModal, setShowStatisticModal] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -137,6 +143,30 @@ export default function AdminPanel() {
       image: "",
       manufacturer: "",
     });
+    setImagePreview(null);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setFormData({ ...formData, image: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+      
+      toast.success("تم اختيار الصورة بنجاح");
+    } catch (error) {
+      toast.error("فشل رفع الصورة");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleAddProduct = async () => {
@@ -169,6 +199,7 @@ export default function AdminPanel() {
       image: product.image || "",
       manufacturer: product.manufacturer || "",
     });
+    setImagePreview(product.image || null);
     setShowEditModal(true);
   };
 
@@ -197,20 +228,6 @@ export default function AdminPanel() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      // For now, just store the file name
-      // In production, you'd upload to S3
-      setFormData({ ...formData, image: file.name });
-      toast.success("تم اختيار الصورة بنجاح");
-    } catch (error) {
-      toast.error("فشل رفع الصورة");
-    }
-  };
-
   // Calculate statistics
   const totalProducts = products?.length || 0;
   const totalDoctors = doctors?.length || 0;
@@ -222,6 +239,37 @@ export default function AdminPanel() {
   const filteredProducts = products?.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
+
+  // Get items for selected statistic
+  const getStatisticItems = () => {
+    switch (selectedStatistic) {
+      case "products":
+        return products || [];
+      case "doctors":
+        return doctors || [];
+      case "appointments":
+        return appointments || [];
+      case "orders":
+        return orders || [];
+      case "pending":
+        return orders?.filter(o => o.status === "pending") || [];
+      case "completed":
+        return orders?.filter(o => o.status === "delivered") || [];
+      default:
+        return [];
+    }
+  };
+
+  const StatisticCard = ({ title, count, subtitle, onClick, color }: any) => (
+    <button
+      onClick={onClick}
+      className={`text-left rounded-2xl p-6 transition-all hover:shadow-lg hover:scale-105 cursor-pointer border-0 ${color}`}
+    >
+      <h3 className="text-sm font-semibold mb-4">{title}</h3>
+      <div className="text-4xl font-bold mb-2">{count}</div>
+      <p className="text-xs opacity-70">{subtitle}</p>
+    </button>
+  );
 
   return (
     <div className="app-container">
@@ -287,67 +335,73 @@ export default function AdminPanel() {
           {activeTab === "dashboard" && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-0">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-blue-700">إجمالي الأدوية</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-blue-900">{totalProducts}</div>
-                    <p className="text-xs text-blue-600 mt-1">منتج متاح</p>
-                  </CardContent>
-                </Card>
+                <StatisticCard
+                  title="إجمالي الأدوية"
+                  count={totalProducts}
+                  subtitle="منتج متاح"
+                  color="bg-gradient-to-br from-blue-50 to-blue-100"
+                  onClick={() => {
+                    setSelectedStatistic("products");
+                    setShowStatisticModal(true);
+                  }}
+                />
 
-                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-0">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-green-700">إجمالي الأطباء</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-green-900">{totalDoctors}</div>
-                    <p className="text-xs text-green-600 mt-1">طبيب متاح</p>
-                  </CardContent>
-                </Card>
+                <StatisticCard
+                  title="إجمالي الأطباء"
+                  count={totalDoctors}
+                  subtitle="طبيب متاح"
+                  color="bg-gradient-to-br from-green-50 to-green-100"
+                  onClick={() => {
+                    setSelectedStatistic("doctors");
+                    setShowStatisticModal(true);
+                  }}
+                />
 
-                <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-0">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-purple-700">إجمالي المواعيد</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-purple-900">{totalAppointments}</div>
-                    <p className="text-xs text-purple-600 mt-1">موعد مسجل</p>
-                  </CardContent>
-                </Card>
+                <StatisticCard
+                  title="إجمالي المواعيد"
+                  count={totalAppointments}
+                  subtitle="موعد مسجل"
+                  color="bg-gradient-to-br from-purple-50 to-purple-100"
+                  onClick={() => {
+                    setSelectedStatistic("appointments");
+                    setShowStatisticModal(true);
+                  }}
+                />
 
-                <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-0">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-orange-700">إجمالي الطلبات</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-orange-900">{totalOrders}</div>
-                    <p className="text-xs text-orange-600 mt-1">طلب مسجل</p>
-                  </CardContent>
-                </Card>
+                <StatisticCard
+                  title="إجمالي الطلبات"
+                  count={totalOrders}
+                  subtitle="طلب مسجل"
+                  color="bg-gradient-to-br from-orange-50 to-orange-100"
+                  onClick={() => {
+                    setSelectedStatistic("orders");
+                    setShowStatisticModal(true);
+                  }}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-0">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-yellow-700">الطلبات المعلقة</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-yellow-900">{pendingOrders}</div>
-                    <p className="text-xs text-yellow-600 mt-1">قيد الانتظار</p>
-                  </CardContent>
-                </Card>
+                <StatisticCard
+                  title="الطلبات المعلقة"
+                  count={pendingOrders}
+                  subtitle="قيد الانتظار"
+                  color="bg-gradient-to-br from-yellow-50 to-yellow-100"
+                  onClick={() => {
+                    setSelectedStatistic("pending");
+                    setShowStatisticModal(true);
+                  }}
+                />
 
-                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-0">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-green-700">الطلبات المكتملة</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-green-900">{completedOrders}</div>
-                    <p className="text-xs text-green-600 mt-1">تم التسليم</p>
-                  </CardContent>
-                </Card>
+                <StatisticCard
+                  title="الطلبات المكتملة"
+                  count={completedOrders}
+                  subtitle="تم التسليم"
+                  color="bg-gradient-to-br from-green-50 to-green-100"
+                  onClick={() => {
+                    setSelectedStatistic("completed");
+                    setShowStatisticModal(true);
+                  }}
+                />
               </div>
             </div>
           )}
@@ -482,16 +536,25 @@ export default function AdminPanel() {
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <ImageIcon className="inline mr-2" size={16} />
                         رفع صورة
                       </label>
                       <input
                         type="file"
                         accept="image/*"
                         onChange={handleImageUpload}
+                        disabled={uploadingImage}
                         className="w-full"
                       />
-                      {formData.image && (
-                        <p className="text-sm text-green-600 mt-2">✓ تم اختيار: {formData.image}</p>
+                      {imagePreview && (
+                        <div className="mt-3 relative">
+                          <img
+                            src={imagePreview}
+                            alt="preview"
+                            className="w-full h-40 object-cover rounded-lg"
+                          />
+                          <p className="text-sm text-green-600 mt-2">✓ تم اختيار الصورة</p>
+                        </div>
                       )}
                     </div>
 
@@ -535,6 +598,9 @@ export default function AdminPanel() {
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
                           <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
+                            الصورة
+                          </th>
+                          <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
                             اسم الدواء
                           </th>
                           <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
@@ -554,6 +620,19 @@ export default function AdminPanel() {
                       <tbody>
                         {filteredProducts.map((product) => (
                           <tr key={product.id} className="border-b border-gray-200 hover:bg-gray-50">
+                            <td className="px-4 py-3 text-sm">
+                              {product.image ? (
+                                <img
+                                  src={product.image}
+                                  alt={product.name}
+                                  className="w-10 h-10 rounded object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
+                                  <ImageIcon size={16} className="text-gray-400" />
+                                </div>
+                              )}
+                            </td>
                             <td className="px-4 py-3 text-sm text-gray-900">{product.name}</td>
                             <td className="px-4 py-3 text-sm text-gray-900">${product.price}</td>
                             <td className="px-4 py-3 text-sm text-gray-900">{product.stock}</td>
@@ -734,9 +813,70 @@ export default function AdminPanel() {
         </div>
       </div>
 
+      {/* Statistic Details Modal */}
+      <Dialog open={showStatisticModal} onOpenChange={setShowStatisticModal}>
+        <DialogContent className="max-w-2xl max-h-96 overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedStatistic === "products" && "الأدوية"}
+              {selectedStatistic === "doctors" && "الأطباء"}
+              {selectedStatistic === "appointments" && "المواعيد"}
+              {selectedStatistic === "orders" && "الطلبات"}
+              {selectedStatistic === "pending" && "الطلبات المعلقة"}
+              {selectedStatistic === "completed" && "الطلبات المكتملة"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {getStatisticItems().length > 0 ? (
+              getStatisticItems().map((item: any) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                >
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">
+                      {item.name || `${selectedStatistic} #${item.id}`}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {item.category && `الفئة: ${item.category}`}
+                      {item.specialty && `التخصص: ${item.specialty}`}
+                      {item.status && `الحالة: ${item.status}`}
+                    </p>
+                  </div>
+                  {selectedStatistic === "products" && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          handleEditProduct(item);
+                          setShowStatisticModal(false);
+                        }}
+                        className="p-2 hover:bg-blue-100 rounded-lg"
+                      >
+                        <Edit2 size={16} className="text-blue-600" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleDeleteProduct(item.id);
+                          setShowStatisticModal(false);
+                        }}
+                        className="p-2 hover:bg-red-100 rounded-lg"
+                      >
+                        <Trash2 size={16} className="text-red-600" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-600 py-6">لا توجد عناصر</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-96 overflow-y-auto">
           <DialogHeader>
             <DialogTitle>تعديل الدواء</DialogTitle>
           </DialogHeader>
@@ -797,6 +937,30 @@ export default function AdminPanel() {
                 <option value="medical_supplies">مستلزمات طبية</option>
                 <option value="pet_care">العناية بالحيوانات</option>
               </select>
+            </div>
+
+            {imagePreview && (
+              <div className="relative">
+                <img
+                  src={imagePreview}
+                  alt="preview"
+                  className="w-full h-32 object-cover rounded-lg"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <ImageIcon className="inline mr-2" size={16} />
+                تحديث الصورة
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={uploadingImage}
+                className="w-full"
+              />
             </div>
 
             <div className="flex gap-2">
