@@ -68,7 +68,7 @@ export default function ProfilePage() {
   if (!isAuthenticated) {
     return (
       <div className="app-container">
-        <div className="app-header bg-gradient-to-r from-emerald-600 to-emerald-700">
+        <div className="app-header bg-white">
           <div className="container mx-auto px-4 py-4">
             <Link href="/">
               <Button variant="ghost" size="sm" className="mb-4 text-white hover:bg-emerald-500">
@@ -82,7 +82,7 @@ export default function ProfilePage() {
 
         <div className="app-content flex items-center justify-center">
           <Card className="w-full max-w-md shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-t-lg">
+            <CardHeader className="bg-white text-white rounded-t-lg">
               <CardTitle>يجب تسجيل الدخول</CardTitle>
               <CardDescription className="text-emerald-100">قم بتسجيل الدخول لعرض ملفك الشخصي</CardDescription>
             </CardHeader>
@@ -154,7 +154,7 @@ export default function ProfilePage() {
   return (
     <div className="app-container">
       {/* Header */}
-      <div className="app-header bg-gradient-to-r from-emerald-600 to-emerald-700">
+      <div className="app-header bg-white">
         <div className="container mx-auto px-4 py-4">
           <Link href="/">
             <Button variant="ghost" size="sm" className="mb-4 text-white hover:bg-emerald-500">
@@ -218,7 +218,7 @@ export default function ProfilePage() {
 
           {/* Admin Dashboard Link */}
           {userRole === "admin" && (
-            <Card className="mb-6 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white border-0 shadow-lg">
+            <Card className="mb-6 bg-white text-white border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white text-lg">
                   <LayoutDashboard className="w-5 h-5" />

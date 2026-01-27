@@ -57,9 +57,9 @@ export default function Appointments() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-t-lg">
+          <CardHeader className="bg-white text-white rounded-t-lg">
             <CardTitle>المواعيد</CardTitle>
             <CardDescription className="text-emerald-100">يجب تسجيل الدخول لعرض مواعيدك</CardDescription>
           </CardHeader>
@@ -144,7 +144,7 @@ export default function Appointments() {
   const selectedDoctorData = doctors?.find(d => d.id.toString() === selectedDoctor);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
