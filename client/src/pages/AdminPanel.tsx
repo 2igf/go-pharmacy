@@ -641,9 +641,9 @@ export default function AdminPanel() {
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => handleEditProduct(product)}
-                                  className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                                  className="p-2 hover:bg-emerald-100 rounded-lg transition-colors"
                                 >
-                                  <Edit2 size={16} className="text-blue-600" />
+                                  <Edit2 size={16} className="text-emerald-600" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteProduct(product.id)}
@@ -705,8 +705,8 @@ export default function AdminPanel() {
                           </td>
                           <td className="px-4 py-3 text-sm">
                             <div className="flex gap-2">
-                              <button className="p-2 hover:bg-blue-100 rounded-lg transition-colors">
-                                <Edit2 size={16} className="text-blue-600" />
+                              <button className="p-2 hover:bg-emerald-100 rounded-lg transition-colors">
+                                <Edit2 size={16} className="text-emerald-600" />
                               </button>
                               <button className="p-2 hover:bg-red-100 rounded-lg transition-colors">
                                 <Trash2 size={16} className="text-red-600" />
@@ -789,8 +789,8 @@ export default function AdminPanel() {
                           </td>
                           <td className="px-4 py-3 text-sm">
                             <div className="flex gap-2">
-                              <button className="p-2 hover:bg-blue-100 rounded-lg transition-colors">
-                                <Edit2 size={16} className="text-blue-600" />
+                              <button className="p-2 hover:bg-emerald-100 rounded-lg transition-colors">
+                                <Edit2 size={16} className="text-emerald-600" />
                               </button>
                               <button className="p-2 hover:bg-red-100 rounded-lg transition-colors">
                                 <Trash2 size={16} className="text-red-600" />
@@ -850,9 +850,9 @@ export default function AdminPanel() {
                           handleEditProduct(item);
                           setShowStatisticModal(false);
                         }}
-                        className="p-2 hover:bg-blue-100 rounded-lg"
+                        className="p-2 hover:bg-emerald-100 rounded-lg"
                       >
-                        <Edit2 size={16} className="text-blue-600" />
+                        <Edit2 size={16} className="text-emerald-600" />
                       </button>
                       <button
                         onClick={() => {

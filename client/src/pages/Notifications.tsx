@@ -62,7 +62,7 @@ export default function Notifications() {
   const getNotificationColor = (type: string) => {
     switch (type) {
       case "order_status":
-        return "bg-blue-50 border-l-4 border-blue-500";
+        return "bg-emerald-50 border-l-4 border-emerald-500";
       case "appointment_reminder":
         return "bg-purple-50 border-l-4 border-purple-500";
       case "medication_reminder":

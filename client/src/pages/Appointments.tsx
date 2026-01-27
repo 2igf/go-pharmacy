@@ -92,7 +92,7 @@ export default function Appointments() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "scheduled":
-        return "bg-blue-100 text-blue-800";
+        return "bg-emerald-100 text-emerald-800";
       case "completed":
         return "bg-green-100 text-green-800";
       case "cancelled":
@@ -241,8 +241,8 @@ export default function Appointments() {
 
                       {/* Notes */}
                       {appointment.notes && (
-                        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <p className="text-sm text-blue-900">
+                        <div className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                          <p className="text-sm text-emerald-900">
                             <span className="font-medium">ملاحظات:</span> {appointment.notes}
                           </p>
                         </div>

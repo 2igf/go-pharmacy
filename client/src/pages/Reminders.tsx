@@ -223,10 +223,10 @@ export default function Reminders() {
 
                   <CardContent className="space-y-4">
                     {/* Frequency */}
-                    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                      <Clock className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                    <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
+                      <Clock className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                       <div>
-                        <p className="text-xs font-medium text-blue-900">التكرار</p>
+                        <p className="text-xs font-medium text-emerald-900">التكرار</p>
                         <p className="text-sm text-blue-700">
                           {getFrequencyLabel(reminder.frequency)}
                         </p>

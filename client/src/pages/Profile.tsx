@@ -13,19 +13,19 @@ const ROLE_CONFIG = {
   admin: {
     label: "مسؤول النظام",
     icon: Crown,
-    color: "from-purple-600 to-purple-700",
-    bgColor: "bg-purple-100",
-    textColor: "text-purple-900",
-    badgeColor: "bg-purple-600",
+    color: "from-emerald-600 to-emerald-700",
+    bgColor: "bg-emerald-100",
+    textColor: "text-emerald-900",
+    badgeColor: "bg-emerald-600",
     description: "لديك صلاحيات إدارية كاملة للتحكم في الموقع"
   },
   pharmacist: {
     label: "صيدلاني",
     icon: Stethoscope,
-    color: "from-blue-600 to-blue-700",
-    bgColor: "bg-blue-100",
-    textColor: "text-blue-900",
-    badgeColor: "bg-blue-600",
+    color: "from-emerald-600 to-emerald-700",
+    bgColor: "bg-emerald-100",
+    textColor: "text-emerald-900",
+    badgeColor: "bg-emerald-600",
     description: "يمكنك إدارة المنتجات والطلبات"
   },
   user: {
@@ -218,7 +218,7 @@ export default function ProfilePage() {
 
           {/* Admin Dashboard Link */}
           {userRole === "admin" && (
-            <Card className="mb-6 bg-gradient-to-r from-purple-600 to-purple-700 text-white border-0 shadow-lg">
+            <Card className="mb-6 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white text-lg">
                   <LayoutDashboard className="w-5 h-5" />
@@ -230,7 +230,7 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <Link href="/admin-panel">
-                  <Button className="w-full bg-white text-purple-600 hover:bg-gray-100 font-semibold">
+                  <Button className="w-full bg-white text-emerald-600 hover:bg-gray-100 font-semibold">
                     <LayoutDashboard className="w-4 h-4 mr-2" />
                     الذهاب إلى لوحة التحكم
                   </Button>
@@ -241,9 +241,9 @@ export default function ProfilePage() {
 
           {/* Edit Profile Form */}
           {isEditing && (
-            <Card className="mb-6 bg-blue-50 border-blue-200">
+            <Card className="mb-6 bg-emerald-50 border-emerald-200">
               <CardHeader>
-                <CardTitle className="text-lg text-blue-900">تعديل البيانات الشخصية</CardTitle>
+                <CardTitle className="text-lg text-emerald-900">تعديل البيانات الشخصية</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -327,14 +327,14 @@ export default function ProfilePage() {
 
             <Card className="border-t-4 border-t-blue-600">
               <CardContent className="pt-6 text-center">
-                <p className="text-3xl font-bold text-blue-600">{appointments?.length || 0}</p>
+                <p className="text-3xl font-bold text-emerald-600">{appointments?.length || 0}</p>
                 <p className="text-sm text-gray-600 mt-1">المواعيد</p>
               </CardContent>
             </Card>
 
             <Card className="border-t-4 border-t-purple-600">
               <CardContent className="pt-6 text-center">
-                <p className="text-3xl font-bold text-purple-600">{reminders?.length || 0}</p>
+                <p className="text-3xl font-bold text-emerald-600">{reminders?.length || 0}</p>
                 <p className="text-sm text-gray-600 mt-1">التذكيرات</p>
               </CardContent>
             </Card>
@@ -443,12 +443,12 @@ export default function ProfilePage() {
           {/* Recent Appointments */}
           <div className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
+              <Calendar className="w-5 h-5 text-emerald-600" />
               المواعيد القادمة
             </h2>
             {appointmentsLoading ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
               </div>
             ) : appointments && appointments.length > 0 ? (
               <div className="space-y-3">
@@ -462,7 +462,7 @@ export default function ProfilePage() {
                             {new Date(appointment.appointmentDate).toLocaleDateString("ar-SA")}
                           </p>
                         </div>
-                        <Badge className="bg-blue-100 text-blue-800">
+                        <Badge className="bg-emerald-100 text-emerald-800">
                           {appointment.consultationType}
                         </Badge>
                       </div>

@@ -39,7 +39,7 @@ export default function OrderTracking() {
       case "pending":
         return "bg-yellow-50 border-l-4 border-yellow-500";
       case "confirmed":
-        return "bg-blue-50 border-l-4 border-blue-500";
+        return "bg-emerald-50 border-l-4 border-emerald-500";
       case "shipped":
         return "bg-purple-50 border-l-4 border-purple-500";
       case "delivered":
@@ -56,9 +56,9 @@ export default function OrderTracking() {
       case "pending":
         return <Clock className="text-yellow-600" size={24} />;
       case "confirmed":
-        return <CheckCircle className="text-blue-600" size={24} />;
+        return <CheckCircle className="text-emerald-600" size={24} />;
       case "shipped":
-        return <Package className="text-purple-600" size={24} />;
+        return <Package className="text-emerald-600" size={24} />;
       case "delivered":
         return <CheckCircle className="text-green-600" size={24} />;
       case "cancelled":

@@ -58,9 +58,9 @@ export default function DeliveryDashboard() {
       case "pending":
         return <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">قيد الانتظار</span>;
       case "confirmed":
-        return <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">مؤكد</span>;
+        return <span className="bg-emerald-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">مؤكد</span>;
       case "shipped":
-        return <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold">مشحون</span>;
+        return <span className="bg-emerald-100 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold">مشحون</span>;
       case "delivered":
         return <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">مسلم</span>;
       default:
