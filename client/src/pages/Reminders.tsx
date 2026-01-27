@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Pill, Clock, ArrowLeft, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Loader2, Pill, Clock, ArrowLeft, Plus, Trash2, AlertCircle, Edit2, CheckCircle2, XCircle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -31,6 +31,7 @@ export default function Reminders() {
   const [frequency, setFrequency] = useState<string>("once_daily");
   const [reminderTimes, setReminderTimes] = useState<string[]>(["08:00"]);
   const [notes, setNotes] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch user reminders
   const { data: reminders, isLoading: remindersLoading, refetch: refetchReminders } = trpc.medicationReminders.list.useQuery(
@@ -67,13 +68,13 @@ export default function Reminders() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
+      <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-t-lg">
             <CardTitle>تذكيرات الأدوية</CardTitle>
-            <CardDescription>يجب تسجيل الدخول لعرض تذكيراتك</CardDescription>
+            <CardDescription className="text-emerald-100">يجب تسجيل الدخول لعرض تذكيراتك</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <Link href="/">
               <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
                 العودة للرئيسية
@@ -101,6 +102,20 @@ export default function Reminders() {
     });
   };
 
+  const handleAddTime = () => {
+    setReminderTimes([...reminderTimes, "12:00"]);
+  };
+
+  const handleRemoveTime = (idx: number) => {
+    setReminderTimes(reminderTimes.filter((_, i) => i !== idx));
+  };
+
+  const handleTimeChange = (idx: number, value: string) => {
+    const newTimes = [...reminderTimes];
+    newTimes[idx] = value;
+    setReminderTimes(newTimes);
+  };
+
   const getFrequencyLabel = (freq: string): string => {
     return FREQUENCIES.find(f => f.value === freq)?.label || freq;
   };
@@ -120,21 +135,28 @@ export default function Reminders() {
     return [];
   };
 
+  const filteredReminders = reminders?.filter(r =>
+    r.medicationName.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
-      <div className="bg-white shadow-sm sticky top-0 z-40">
+      <div className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
           <Link href="/">
-            <Button variant="ghost" size="sm" className="mb-4">
+            <Button variant="ghost" size="sm" className="mb-4 text-emerald-600 hover:text-emerald-700">
               <ArrowLeft className="w-4 h-4 mr-2" />
               العودة
             </Button>
           </Link>
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900">تذكيرات الأدوية</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">تذكيرات الأدوية</h1>
+              <p className="text-gray-600 text-sm mt-1">تذكر بمواعيد تناول أدويتك</p>
+            </div>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-emerald-600 hover:bg-emerald-700 shadow-md"
               onClick={() => setShowAddReminder(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -145,50 +167,80 @@ export default function Reminders() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Search Bar */}
+        {reminders && reminders.length > 0 && (
+          <div className="mb-6">
+            <Input
+              type="text"
+              placeholder="ابحث عن الدواء..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="text-right"
+            />
+          </div>
+        )}
+
         {remindersLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
           </div>
-        ) : reminders && reminders.length > 0 ? (
+        ) : filteredReminders && filteredReminders.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reminders.map((reminder) => {
+            {filteredReminders.map((reminder) => {
               const times = parseReminderTimes(reminder.reminderTimes);
               return (
-                <Card key={reminder.id} className={reminder.isActive ? "" : "opacity-60"}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="flex items-center gap-2">
-                          <Pill className="w-5 h-5 text-emerald-600" />
-                          {reminder.medicationName}
-                        </CardTitle>
-                        {reminder.dosage && (
-                          <CardDescription>{reminder.dosage}</CardDescription>
+                <Card key={reminder.id} className={`hover:shadow-lg transition-shadow border-l-4 ${reminder.isActive ? "border-l-emerald-600" : "border-l-gray-300 opacity-60"}`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white flex-shrink-0">
+                          <Pill className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-lg break-words">
+                            {reminder.medicationName}
+                          </CardTitle>
+                          {reminder.dosage && (
+                            <CardDescription className="text-sm">{reminder.dosage}</CardDescription>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0">
+                        {reminder.isActive ? (
+                          <Badge className="bg-green-100 text-green-800 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            نشط
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-gray-100 text-gray-800 flex items-center gap-1">
+                            <XCircle className="w-3 h-3" />
+                            معطل
+                          </Badge>
                         )}
                       </div>
-                      {reminder.isActive ? (
-                        <Badge className="bg-green-100 text-green-800">نشط</Badge>
-                      ) : (
-                        <Badge className="bg-gray-100 text-gray-800">معطل</Badge>
-                      )}
                     </div>
                   </CardHeader>
+
                   <CardContent className="space-y-4">
                     {/* Frequency */}
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-sm">
-                        {getFrequencyLabel(reminder.frequency)}
-                      </span>
+                    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                      <Clock className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-medium text-blue-900">التكرار</p>
+                        <p className="text-sm text-blue-700">
+                          {getFrequencyLabel(reminder.frequency)}
+                        </p>
+                      </div>
                     </div>
 
                     {/* Reminder Times */}
                     {times.length > 0 && (
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">أوقات التذكير:</p>
+                        <p className="text-sm font-semibold text-gray-900 mb-2">أوقات التذكير:</p>
                         <div className="flex flex-wrap gap-2">
                           {times.map((time, idx) => (
-                            <Badge key={idx} variant="outline">
+                            <Badge key={idx} variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                              <Clock className="w-3 h-3 mr-1" />
                               {time}
                             </Badge>
                           ))}
@@ -198,10 +250,9 @@ export default function Reminders() {
 
                     {/* Notes */}
                     {reminder.notes && (
-                      <div>
-                        <p className="text-sm text-gray-600">
-                          <span className="font-medium">ملاحظات:</span> {reminder.notes}
-                        </p>
+                      <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p className="text-xs font-medium text-yellow-900 mb-1">ملاحظات:</p>
+                        <p className="text-sm text-yellow-800">{reminder.notes}</p>
                       </div>
                     )}
 
@@ -220,10 +271,11 @@ export default function Reminders() {
             })}
           </div>
         ) : (
-          <Card>
-            <CardContent className="pt-6 text-center">
-              <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 text-lg mb-4">لا توجد تذكيرات أدوية</p>
+          <Card className="border-2 border-dashed border-gray-300">
+            <CardContent className="pt-12 text-center pb-12">
+              <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600 text-lg font-medium mb-2">لا توجد تذكيرات أدوية</p>
+              <p className="text-gray-500 text-sm mb-6">ابدأ بإضافة تذكير لأدويتك</p>
               <Button
                 className="bg-emerald-600 hover:bg-emerald-700"
                 onClick={() => setShowAddReminder(true)}
@@ -238,18 +290,18 @@ export default function Reminders() {
 
       {/* Add Reminder Dialog */}
       <Dialog open={showAddReminder} onOpenChange={setShowAddReminder}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>إضافة تذكير دواء</DialogTitle>
+            <DialogTitle className="text-2xl">إضافة تذكير دواء</DialogTitle>
             <DialogDescription>
               أضف تذكير لدوائك لتتذكر مواعيد تناوله
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Medication Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
                 اسم الدواء *
               </label>
               <Input
@@ -257,13 +309,13 @@ export default function Reminders() {
                 placeholder="مثال: الأسبرين"
                 value={medicationName}
                 onChange={(e) => setMedicationName(e.target.value)}
-                className="text-right"
+                className="text-right h-11"
               />
             </div>
 
             {/* Dosage */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
                 الجرعة
               </label>
               <Input
@@ -271,17 +323,17 @@ export default function Reminders() {
                 placeholder="مثال: 500mg"
                 value={dosage}
                 onChange={(e) => setDosage(e.target.value)}
-                className="text-right"
+                className="text-right h-11"
               />
             </div>
 
             {/* Frequency */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
                 التكرار *
               </label>
               <Select value={frequency} onValueChange={setFrequency}>
-                <SelectTrigger>
+                <SelectTrigger className="h-11">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -296,72 +348,68 @@ export default function Reminders() {
 
             {/* Reminder Times */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                أوقات التذكير
-              </label>
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-semibold text-gray-900">
+                  أوقات التذكير
+                </label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAddTime}
+                  className="text-emerald-600 hover:text-emerald-700"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  إضافة وقت
+                </Button>
+              </div>
               <div className="space-y-2">
                 {reminderTimes.map((time, idx) => (
                   <div key={idx} className="flex gap-2">
-                    <Input
+                    <input
                       type="time"
                       value={time}
-                      onChange={(e) => {
-                        const newTimes = [...reminderTimes];
-                        newTimes[idx] = e.target.value;
-                        setReminderTimes(newTimes);
-                      }}
-                      className="text-right"
+                      onChange={(e) => handleTimeChange(idx, e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     {reminderTimes.length > 1 && (
                       <Button
-                        variant="destructive"
                         size="sm"
-                        onClick={() => {
-                          setReminderTimes(reminderTimes.filter((_, i) => i !== idx));
-                        }}
+                        variant="destructive"
+                        onClick={() => handleRemoveTime(idx)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     )}
                   </div>
                 ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setReminderTimes([...reminderTimes, "12:00"])}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  إضافة وقت
-                </Button>
               </div>
             </div>
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ملاحظات
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                ملاحظات إضافية
               </label>
-              <Input
-                type="text"
-                placeholder="مثال: تناول مع الطعام"
+              <textarea
+                placeholder="مثال: تناول مع الطعام، قد يسبب النعاس..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="text-right"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                rows={3}
               />
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-4">
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-11"
                 onClick={() => setShowAddReminder(false)}
               >
                 إلغاء
               </Button>
               <Button
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 h-11"
                 onClick={handleAddReminder}
                 disabled={createReminder.isPending || !medicationName}
               >
